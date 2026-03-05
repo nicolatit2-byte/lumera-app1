@@ -1,0 +1,21 @@
+name: Build Lumera
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Crea file necessari
+        run: |
+          mkdir -p www
+          echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>LUMERA</title><style>body{background:#0a0a0c;color:white;font-family:sans-serif;}</style></head><body><h1>LUMERA</h1><p>Funziona!</p></body></html>' > www/index.html
+          echo '{"name":"lumera","version":"1.0.0","main":"main.js","scripts":{"build":"electron-builder"},"devDependencies":{"electron":"^28.0.0","electron-builder":"^24.0.0"},"build":{"appId":"com.lumera.app","mac":{"category":"public.app-category.photography"}}}' > package.json
+          echo 'const {app,BrowserWindow}=require("electron");app.whenReady().then(()=>{new BrowserWindow({width:1400,height:900}).loadFile("www/index.html");});' > main.js
+          echo 'const {contextBridge}=require("electron");contextBridge.exposeInMainWorld("electronAPI",{});' > preload.js
+      - run: npm install
+      - run: npm run build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: lumera-mac
+          path: dist/mac/LUMERA.app
